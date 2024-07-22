@@ -19,7 +19,7 @@ arena_destroy :: proc(arena: ^Arena) {
     free(arena)
 }
 
-arena_alloc :: proc(arena: ^Arena, size: int, alignment := 8) -> (ptr: rawptr, resized: bool) {
+arena_alloc :: proc(arena: ^Arena, size: int, alignment := 8) -> (ptr: rawptr, resized: bool) #optional_ok {
     aligned_offset := (arena.offset + alignment - 1) & ~(alignment - 1)
 
     if arena.offset + aligned_offset > arena.capacity {
@@ -36,7 +36,7 @@ arena_alloc :: proc(arena: ^Arena, size: int, alignment := 8) -> (ptr: rawptr, r
     return
 }
 
-arena_new :: proc(arena: ^Arena, type: $T) -> (ptr_t: ^T, resized: bool) {
+arena_new :: proc(arena: ^Arena, type: $T) -> (ptr_t: ^T, resized: bool) #optional_ok {
     size := size_of(T)
     align := align_of(T)
 
