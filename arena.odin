@@ -1,0 +1,60 @@
+package dlib
+
+Arena :: struct {
+    buffer:    []byte,
+    offset:    int,
+    capacity:  int,
+    auto_grow: bool,
+}
+
+arena_create :: proc(size := 1024, auto_grow := false) -> ^Arena {
+    arena := new(Arena)
+    arena.buffer = make([]byte, size)
+    arena.auto_grow = auto_grow
+    return arena
+}
+
+arena_destroy :: proc(arena: ^Arena) {
+    delete(arena.buffer)
+    free(arena)
+}
+
+arena_alloc :: proc(arena: ^Arena, size: int, alignment := 8) -> (ptr: rawptr, resized: bool) {
+    aligned_offset := (arena.offset + alignment - 1) & ~(alignment - 1)
+
+    if arena.offset + aligned_offset > arena.capacity {
+        if arena.auto_grow {
+            arena_grow(arena)
+            resized = true
+        } else {
+            return nil, false
+        }
+    }
+
+    ptr = &arena.buffer[arena.offset]
+    arena.offset += aligned_offset + size
+    return
+}
+
+arena_new :: proc(arena: ^Arena, type: $T) -> (ptr_t: ^T, resized: bool) {
+    size := size_of(T)
+    align := align_of(T)
+
+    ptr: rawptr
+    ptr, resized = arena_alloc(arena, size, align)
+    ptr_t = cast(^T)ptr
+    return
+}
+
+@(private = "file")
+arena_grow :: proc(arena: ^Arena, new_size := 0) {
+    size := new_size
+    if size == 0 {
+        size = arena.capacity * 2
+    }
+
+    new_buf := make([]byte, size)
+    copy(new_buf, arena.buffer)
+    delete(arena.buffer)
+    arena.buffer = new_buf
+}
