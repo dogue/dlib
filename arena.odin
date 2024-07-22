@@ -1,7 +1,5 @@
 package dlib
 
-import "core:fmt"
-
 Arena :: struct {
     buffer:    []byte,
     offset:    int,
@@ -25,9 +23,7 @@ arena_destroy :: proc(arena: ^Arena) {
 arena_alloc :: proc(arena: ^Arena, size: int, alignment := 8) -> (ptr: rawptr, resized: bool) #optional_ok {
     aligned_offset := (arena.offset + alignment - 1) & ~(alignment - 1)
 
-    fmt.printf("size: %d\naligned: %d\ncap: %d\n", size, aligned_offset, arena.capacity)
     if arena.offset + aligned_offset + size >= arena.capacity {
-        fmt.printf("GROWING\n")
         if arena.auto_grow {
             arena_grow(arena, len(arena.buffer) * 4)
             resized = true
@@ -52,11 +48,10 @@ arena_new :: proc(arena: ^Arena, $T: typeid) -> (ptr_t: ^T, resized: bool) #opti
     return
 }
 
-@(private = "file")
 arena_grow :: proc(arena: ^Arena, new_size := 0) {
     size := new_size
     if size == 0 {
-        size = arena.capacity * 2
+        size = len(arena.buffer) * 2
     }
 
     new_buf := make([]byte, size)
