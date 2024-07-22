@@ -36,7 +36,7 @@ arena_alloc :: proc(arena: ^Arena, size: int, alignment := 8) -> (ptr: rawptr, r
     return
 }
 
-arena_new :: proc(arena: ^Arena, type: $T) -> (ptr_t: ^T, resized: bool) #optional_ok {
+arena_new :: proc(arena: ^Arena, $T: typeid) -> (ptr_t: ^T, resized: bool) #optional_ok {
     size := size_of(T)
     align := align_of(T)
 
