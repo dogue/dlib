@@ -1,5 +1,7 @@
 package dlib
 
+import "core:fmt"
+
 Arena :: struct {
     buffer:    []byte,
     offset:    int,
@@ -11,6 +13,7 @@ arena_create :: proc(size := 1024, auto_grow := false) -> ^Arena {
     arena := new(Arena)
     arena.buffer = make([]byte, size)
     arena.auto_grow = auto_grow
+    arena.capacity = len(arena.buffer)
     return arena
 }
 
@@ -22,9 +25,11 @@ arena_destroy :: proc(arena: ^Arena) {
 arena_alloc :: proc(arena: ^Arena, size: int, alignment := 8) -> (ptr: rawptr, resized: bool) #optional_ok {
     aligned_offset := (arena.offset + alignment - 1) & ~(alignment - 1)
 
-    if arena.offset + aligned_offset > arena.capacity {
+    fmt.printf("size: %d\naligned: %d\ncap: %d\n", size, aligned_offset, arena.capacity)
+    if arena.offset + aligned_offset + size >= arena.capacity {
+        fmt.printf("GROWING\n")
         if arena.auto_grow {
-            arena_grow(arena)
+            arena_grow(arena, len(arena.buffer) * 4)
             resized = true
         } else {
             return nil, false
@@ -33,6 +38,7 @@ arena_alloc :: proc(arena: ^Arena, size: int, alignment := 8) -> (ptr: rawptr, r
 
     ptr = &arena.buffer[arena.offset]
     arena.offset += aligned_offset + size
+    arena.capacity = len(arena.buffer) - arena.offset
     return
 }
 
@@ -57,4 +63,5 @@ arena_grow :: proc(arena: ^Arena, new_size := 0) {
     copy(new_buf, arena.buffer)
     delete(arena.buffer)
     arena.buffer = new_buf
+    arena.capacity = len(arena.buffer) - arena.offset
 }
