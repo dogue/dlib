@@ -1,8 +1,5 @@
 package dlib
 
-import "core:fmt"
-import "core:mem"
-
 Arena :: struct {
     buffer:    []byte,
     offset:    int,
@@ -57,7 +54,7 @@ arena_make_slice :: proc(arena: ^Arena, $T: typeid/[]$E, length: int) -> (slice:
     ptr: rawptr
     offset := arena.offset
     ptr, resized = arena_alloc(arena, size, align)
-    slice = mem.slice_ptr(cast([^]E)ptr, length)
+    slice = ([^]E)(ptr)[:length]
     return
 }
 
