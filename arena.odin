@@ -66,6 +66,9 @@ arena_grow :: proc(arena: ^Arena, new_size := 0) {
     if size == 0 {
         size = len(arena.buffer) * 2
     }
+    if size < len(arena.buffer) {
+        return
+    }
 
     new_buf := make([]byte, size)
     copy(new_buf, arena.buffer)
