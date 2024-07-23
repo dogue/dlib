@@ -51,14 +51,13 @@ arena_new :: proc(arena: ^Arena, $T: typeid) -> (ptr_t: ^T, resized: bool) #opti
     return
 }
 
-arena_make :: proc(arena: ^Arena, $T: typeid/[]$E, length: int) -> (out: T, resized: bool) #optional_ok {
+arena_make_slice :: proc(arena: ^Arena, $T: typeid/[]$E, length: int) -> (slice: T, resized: bool) #optional_ok {
     size := size_of(E) * length
     align := align_of(E)
-
     ptr: rawptr
     offset := arena.offset
     ptr, resized = arena_alloc(arena, size, align)
-    out = mem.slice_ptr(cast([^]E)ptr, length)
+    slice = mem.slice_ptr(cast([^]E)ptr, length)
     return
 }
 
