@@ -73,3 +73,8 @@ arena_grow :: proc(arena: ^Arena, new_size := 0) {
     arena.buffer = new_buf
     arena.capacity = len(arena.buffer) - arena.offset
 }
+
+arena_reset :: proc(arena: ^Arena) {
+    arena.offset = 0
+    arena.capacity = len(arena.buffer)
+}
